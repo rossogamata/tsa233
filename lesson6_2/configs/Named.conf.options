@@ -1,0 +1,30 @@
+options {
+    directory "/var/cache/bind";
+
+    // Дозволити рекурсивні запити лише з локальної мережі
+    allow-recursion {
+        localhost;
+        192.168.1.0/24;
+    };
+
+    // Форвардинг зовнішніх запитів на DNS Google
+    forwarders {
+        8.8.8.8;
+        8.8.4.4;
+    };
+    forward only;
+
+    // Прослуховувати всі інтерфейси
+    listen-on { any; };
+
+    // Вимкнути IPv6 (якщо не використовується)
+    listen-on-v6 { none; };
+
+    // Дозволити запити від локальної мережі
+    allow-query {
+        localhost;
+        192.168.1.0/24;
+    };
+
+    dnssec-validation no;
+};

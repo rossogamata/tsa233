@@ -1,13 +1,13 @@
 # ============================================================
-#  Dockerfile — nginx-сайт для лабораторної роботи tsa233.com
+#  Dockerfile — nginx-сайт для лабораторної роботи tsa233.lab
 #  Запускається на ПК викладача, доступний через DNS BIND
 # ============================================================
 
 FROM nginx:alpine
 
 # Метадані образу
-LABEL maintainer="VIIT Lab"
-LABEL description="Тестовий сайт tsa233.com для лабораторної роботи з DNS"
+LABEL maintainer="MITIT Lab"
+LABEL description="Тестovий сайт tsa233.lab для лабораторної роботи з DNS"
 
 # Копіюємо кастомну сторінку та конфіг nginx
 COPY html/ /usr/share/nginx/html/

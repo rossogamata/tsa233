@@ -1,0 +1,21 @@
+;
+; Файл прямої зони для tsa233.lab
+;
+$TTL    604800
+@   IN  SOA ns1.tsa233.lab. admin.tsa233.lab. (
+                  2024010101  ; Serial (формат: YYYYMMDDNN)
+                  3600        ; Refresh (1 год)
+                  1800        ; Retry (30 хв)
+                  604800      ; Expire (1 тиждень)
+                  86400 )     ; Negative Cache TTL (1 день)
+
+; Записи Name Server
+@       IN  NS      ns1.tsa233.lab.
+
+; A-записи (ім'я → IP)
+ns1     IN  A       192.168.1.10    ; DNS-сервер (Ubuntu VM)
+@       IN  A       192.168.1.100   ; Основний сайт (ПК викладача)
+www     IN  A       192.168.1.100   ; www псевдонім
+
+; CNAME (псевдонім)
+web     IN  CNAME   tsa233.lab.

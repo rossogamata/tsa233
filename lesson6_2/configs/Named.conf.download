@@ -1,0 +1,11 @@
+// Пряма зона (ім'я → IP)
+zone "tsa233.lab" {
+    type master;
+    file "/etc/bind/zones/db.tsa233.lab";
+};
+
+// Зворотна зона (IP → ім'я)
+zone "1.168.192.in-addr.arpa" {
+    type master;
+    file "/etc/bind/zones/db.192.168.1";
+};

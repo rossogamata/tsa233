@@ -1,4 +1,4 @@
-# docker-compose.yml — зручний запуск сайту tsa233.com
+# docker-compose.yml — зручний запуск сайту tsa233.lab
 #
 # Запуск:   docker-compose up -d
 # Зупинка:  docker-compose down
