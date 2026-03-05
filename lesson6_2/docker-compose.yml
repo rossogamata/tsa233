@@ -1,0 +1,17 @@
+# docker-compose.yml — зручний запуск сайту tsa233.com
+#
+# Запуск:   docker-compose up -d
+# Зупинка:  docker-compose down
+# Логи:     docker-compose logs -f
+
+version: "3.8"
+
+services:
+  web:
+    build: .
+    container_name: tsa233-web
+    ports:
+      - "80:80"        # Прокидаємо порт 80 на хост
+    restart: unless-stopped
+    volumes:
+      - ./html:/usr/share/nginx/html:ro   # Для live-оновлення сторінки

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>tsa233.com — DNS Лабораторна робота</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .container {
+      text-align: center;
+      padding: 40px;
+      max-width: 700px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #238636;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      color: #58a6ff;
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #8b949e;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 24px 32px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .card h2 {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b949e;
+      margin-bottom: 16px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #21262d;
+      font-size: 0.95rem;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-label { color: #8b949e; }
+    .info-value { color: #58a6ff; font-family: monospace; font-size: 0.9rem; }
+    .info-value.green { color: #3fb950; }
+
+    .success-banner {
+      background: linear-gradient(135deg, #1a2f1a, #0d2818);
+      border: 1px solid #238636;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .success-banner .icon { font-size: 2.5rem; margin-bottom: 8px; }
+    .success-banner p { color: #3fb950; font-size: 1.05rem; font-weight: 600; }
+    .success-banner small { color: #8b949e; font-size: 0.85rem; }
+
+    .footer {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      color: #484f58;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="badge">🎓 ВІТІ — Лабораторна робота</div>
+
+    <h1>tsa233.com</h1>
+    <p class="subtitle">Тестовий сайт для демонстрації роботи DNS-сервера BIND</p>
+
+    <div class="success-banner">
+      <div class="icon">✅</div>
+      <p>DNS-розпізнавання працює успішно!</p>
+      <small>Ваш комп'ютер правильно налаштований і використовує локальний DNS-сервер</small>
+    </div>
+
+    <div class="card">
+      <h2>📡 Інформація про з'єднання</h2>
+      <div class="info-row">
+        <span class="info-label">Домен</span>
+        <span class="info-value">tsa233.com</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Сервер</span>
+        <span class="info-value">nginx / Docker</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Статус DNS</span>
+        <span class="info-value green">● Active</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Протокол</span>
+        <span class="info-value">HTTP/1.1</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔍 Для перевірки (виконати на своєму ПК)</h2>
+      <div class="info-row">
+        <span class="info-label">nslookup</span>
+        <span class="info-value">nslookup tsa233.com</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">ping</span>
+        <span class="info-value">ping tsa233.com</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">nslookup www</span>
+        <span class="info-value">nslookup www.tsa233.com</span>
+      </div>
+    </div>
+
+    <div class="footer">
+      Адміністрування мережевих служб &nbsp;·&nbsp; BIND9 на Ubuntu &nbsp;·&nbsp; nginx у Docker
+    </div>
+
+  </div>
+</body>
+</html>
