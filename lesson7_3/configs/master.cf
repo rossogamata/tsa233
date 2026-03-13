@@ -1,0 +1,63 @@
+# /etc/postfix/master.cf
+# Конфігурація служб Postfix
+#
+# Формат:
+# service  type  private  unpriv  chroot  wakeup  maxproc  command + args
+
+# SMTP — прийом пошти між серверами (порт 25)
+smtp      inet  n       -       y       -       -       smtpd
+
+# Submission — відправка пошти від клієнта (порт 587)
+submission inet n       -       y       -       -       smtpd
+  -o syslog_name=postfix/submission
+  -o smtpd_tls_security_level=may
+  -o smtpd_sasl_auth_enable=yes
+  -o smtpd_recipient_restrictions=permit_sasl_authenticated,reject
+
+# Pickup — обробка локальної черги
+pickup    unix  n       -       y       60      1       pickup
+
+# Cleanup — нормалізація заголовків листів
+cleanup   unix  n       -       y       -       0       cleanup
+
+# Qmgr — менеджер черги
+qmgr      unix  n       -       n       300     1       qmgr
+
+# TLS менеджер
+tlsmgr    unix  -       -       y       1000?   1       tlsmgr
+
+# Rewrite — переписування адрес
+rewrite   unix  -       -       y       -       -       trivial-rewrite
+
+# Bounce, defer, trace — повідомлення про помилки доставки
+bounce    unix  -       -       y       -       0       bounce
+defer     unix  -       -       y       -       0       bounce
+trace     unix  -       -       y       -       0       bounce
+
+# Verify — верифікація адрес
+verify    unix  -       -       y       -       1       verify
+
+# Flush — примусове відправлення черги
+flush     unix  n       -       y       1000?   0       flush
+
+# Proxymap — proxy для map-файлів
+proxymap  unix  -       -       n       -       -       proxymap
+proxywrite unix -       -       n       -       1       proxymap
+
+# SMTP-клієнт — відправка пошти на інші сервери
+smtp      unix  -       -       y       -       -       smtp
+
+# Local — доставка локальним користувачам
+local     unix  -       n       n       -       -       local
+
+# Virtual — доставка у віртуальні поштові скриньки
+virtual   unix  -       n       n       -       -       virtual
+
+# Lmtp — доставка через LMTP
+lmtp      unix  -       -       y       -       -       lmtp
+
+# Anvil — обмеження з'єднань
+anvil     unix  -       -       y       -       1       anvil
+
+# Scache — кешування SMTP-з'єднань
+scache    unix  -       -       y       -       1       scache

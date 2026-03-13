@@ -1,0 +1,39 @@
+# /etc/postfix/main.cf
+# Конфігурація Postfix для домену tsa233.lab
+
+# Ім'я хоста сервера
+myhostname = mail.tsa233.lab
+
+# Домен для пошти
+mydomain = tsa233.lab
+
+# Від імені якого домену відправляти листи
+myorigin = $mydomain
+
+# Мережеві інтерфейси для прийому пошти
+inet_interfaces = all
+
+# Протокол (лише IPv4)
+inet_protocols = ipv4
+
+# Для яких доменів приймати пошту
+mydestination = $myhostname, $mydomain, localhost.$mydomain, localhost
+
+# Довіряти листам із локальної мережі
+mynetworks = 127.0.0.0/8, 192.168.1.0/24
+
+# Де зберігати листи (формат Maildir)
+home_mailbox = Maildir/
+
+# Розмір поштової скриньки (50 МБ)
+mailbox_size_limit = 52428800
+
+# Максимальний розмір листа (10 МБ)
+message_size_limit = 10240000
+
+# Банер при підключенні (не розкривати версію ПЗ)
+smtpd_banner = $myhostname ESMTP
+
+# Alias-база
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases

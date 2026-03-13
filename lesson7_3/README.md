@@ -594,7 +594,7 @@ sudo doveadm log find               # Де знаходяться логи
 ## Структура проєкту на GitHub
 
 ```
-mail-lab/
+lesson7_3/
 ├── README.md                          # Ця методичка
 └── configs/
     ├── main.cf                        # Конфіг Postfix
@@ -613,4 +613,4 @@ mail-lab/
 
 ---
 
-*Версія: 1.0 | Дата: 2024*
+*Версія: 1.0 | Дата: 2026*
