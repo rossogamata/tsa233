@@ -18,6 +18,9 @@ tsa233/
 │   ├── docker/         # Docker-образ для стенду
 │   └── docker-compose.yml
 │
+├── lesson6_4/          # Криптографія (лекція)
+│   └── README.md
+│
 └── lesson7_3/          # Поштовий сервер Postfix + Dovecot
     ├── README.md
     └── configs/        # Конфігурація Postfix і Dovecot
@@ -30,6 +33,7 @@ tsa233/
 | # | Тема | Технології | Матеріали |
 |---|------|------------|-----------|
 | 6.2 | Налаштування DNS-сервера | BIND9, зона `tsa233.lab` | [lesson6_2/](lesson6_2/) |
+| 6.4 | Криптографія (лекція) | AES, RSA, SHA, TLS, PKI, ЕЦП | [lesson6_4/](lesson6_4/) |
 | 7.3 | Базове налаштування поштового сервера | Postfix, Dovecot, SMTP, IMAP/POP3 | [lesson7_3/](lesson7_3/) |
 
 ---
