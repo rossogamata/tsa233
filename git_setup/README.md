@@ -122,7 +122,7 @@ git config --list
 git clone <URL репозиторію>
 
 # Приклад
-git clone https://github.com/username/tsa233.git
+git clone https://github.com/rossogamata/tsa233.git
 ```
 
 Після виконання команди буде створена папка `tsa233/` з усім вмістом репозиторію.
@@ -131,10 +131,10 @@ git clone https://github.com/username/tsa233.git
 
 ```bash
 # Клонувати у папку з іншою назвою
-git clone https://github.com/username/tsa233.git my_folder
+git clone https://github.com/rossogamata/tsa233.git my_folder
 
 # Клонувати у поточну директорію (крапка в кінці)
-git clone https://github.com/username/tsa233.git .
+git clone https://github.com/rossogamata/tsa233.git .
 ```
 
 ### 4.3 Клонування через SSH (рекомендовано)
@@ -166,7 +166,7 @@ cat ~/.ssh/id_ed25519.pub
 **Крок 4 — Клонувати через SSH:**
 
 ```bash
-git clone git@github.com:username/tsa233.git
+git clone git@github.com:rossogamata/tsa233.git
 ```
 
 ### 4.4 Перевірка після клонування
