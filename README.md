@@ -21,9 +21,15 @@ tsa233/
 ├── lesson6_4/          # Криптографія (лекція)
 │   └── README.md
 │
-└── lesson7_3/          # Поштовий сервер Postfix + Dovecot
-    ├── README.md
-    └── configs/        # Конфігурація Postfix і Dovecot
+├── lesson6_5/          # Інфраструктура відкритих ключів (PKI)
+│   └── README.md
+│
+├── lesson7_3/          # Поштовий сервер Postfix + Dovecot
+│   ├── README.md
+│   └── configs/        # Конфігурація Postfix і Dovecot
+│
+└── git_setup/          # Встановлення Git та робота з репозиторієм
+    └── README.md
 ```
 
 ---
@@ -34,7 +40,16 @@ tsa233/
 |---|------|------------|-----------|
 | 6.2 | Налаштування DNS-сервера | BIND9, зона `tsa233.lab` | [lesson6_2/](lesson6_2/) |
 | 6.4 | Криптографія (лекція) | AES, RSA, SHA, TLS, PKI, ЕЦП | [lesson6_4/](lesson6_4/) |
+| 6.5 | Інфраструктура відкритих ключів | OpenSSL, CA, X.509, TLS, SSH-ключі | [lesson6_5/](lesson6_5/) |
 | 7.3 | Базове налаштування поштового сервера | Postfix, Dovecot, SMTP, IMAP/POP3 | [lesson7_3/](lesson7_3/) |
+
+---
+
+## Додаткові матеріали
+
+| Тема | Опис | Матеріали |
+|------|------|-----------|
+| Встановлення Git та робота з репозиторієм | Інсталяція Git на Windows/Linux, клонування, основні команди | [git_setup/](git_setup/) |
 
 ---
 
