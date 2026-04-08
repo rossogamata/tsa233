@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "/home/enduro/viti/tsa233/lesson6_6"
+    ],
+    "allow": [
+      "Bash(chmod +x /home/enduro/viti/tsa233/lesson6_6/scripts/*.sh)"
+    ]
+  }
+}
