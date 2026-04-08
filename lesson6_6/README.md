@@ -11,6 +11,7 @@
 
 1. [Створення сертифікату за допомогою OpenSSL](#1-створення-сертифікату-за-допомогою-openssl)
 2. [Додавання цифрового сертифікату в ОС Linux та Windows](#2-додавання-цифрового-сертифікату-в-ос-linux-та-windows)
+3. [Шифрування та розшифрування тексту у файлі](#3-шифрування-та-розшифрування-тексту-у-файлі)
 
 ---
 
@@ -695,6 +696,210 @@ $cert = $request.ServicePoint.Certificate
 Write-Host "Subject:  $($cert.Subject)"
 Write-Host "Issuer:   $($cert.Issuer)"
 Write-Host "Expires:  $($cert.GetExpirationDateString())"
+```
+
+---
+
+## 3. Шифрування та розшифрування тексту у файлі
+
+### 3.1 Асиметричне шифрування файлу (RSA)
+
+RSA шифрує публічним ключем — розшифрувати може тільки власник приватного ключа. Це основа безпечної передачі даних.
+
+> **Обмеження RSA:** не можна зашифрувати файл більший за розмір ключа (~245 байт для RSA-2048). Для великих файлів — дивіться AES нижче.
+
+#### Крок 1 — Підготувати файл із текстом
+
+```bash
+mkdir -p ~/encrypt-lab
+cd ~/encrypt-lab
+
+# Створити файл з повідомленням
+echo "Секретне повідомлення від $(whoami), $(date '+%d.%m.%Y')" > message.txt
+
+cat message.txt
+```
+
+#### Крок 2 — Згенерувати пару RSA-ключів
+
+```bash
+# Приватний ключ (зберігати в таємниці)
+openssl genrsa -out private.pem 2048
+
+# Витягнути публічний ключ (можна передавати будь-кому)
+openssl rsa -in private.pem -pubout -out public.pem
+
+ls -lh private.pem public.pem
+```
+
+```
+private.pem  1.7K   ← приватний: тільки у вас
+public.pem    451   ← публічний: можна публікувати
+```
+
+#### Крок 3 — Зашифрувати файл публічним ключем
+
+```bash
+openssl pkeyutl -encrypt \
+    -inkey public.pem -pubin \
+    -in  message.txt \
+    -out message.enc
+
+# Переглянути зашифровані дані (hex-дамп)
+xxd message.enc | head -5
+```
+
+```
+00000000: 8f3a b210 e5c7 9a02 ...   ← нечитаємий бінарний вміст
+```
+
+```bash
+# Спроба прочитати напряму — нічого зрозумілого
+cat message.enc
+```
+
+#### Крок 4 — Розшифрувати приватним ключем
+
+```bash
+openssl pkeyutl -decrypt \
+    -inkey private.pem \
+    -in  message.enc \
+    -out message_dec.txt
+
+cat message_dec.txt
+```
+
+```bash
+# Перевірити що оригінал і розшифрований файл ідентичні
+diff message.txt message_dec.txt && echo "Файли ідентичні ✓"
+```
+
+#### Схема процесу
+
+```
+Відправник                          Отримувач
+─────────                           ─────────
+message.txt                         private.pem (тільки у нього)
+    │
+    ▼
+openssl pkeyutl -encrypt            openssl pkeyutl -decrypt
+    -inkey public.pem -pubin ──────►    -inkey private.pem
+    │                                       │
+    ▼                                       ▼
+message.enc ─────────── мережа ──► message_dec.txt
+(нечитаємо)                        (відновлено)
+```
+
+---
+
+### 3.2 Симетричне шифрування файлу (AES-256)
+
+AES шифрує одним паролем — швидко, без обмежень на розмір файлу. Використовується для локального захисту або передачі через захищений канал.
+
+#### Зашифрувати файл
+
+```bash
+cd ~/encrypt-lab
+
+# Створити файл довільного розміру
+cat > secret.txt << 'EOF'
+СЕКРЕТНІ ДАНІ ПІДРОЗДІЛУ
+Позивний: Альфа
+Координати: 50.4501° N, 30.5234° E
+Час операції: 03:00
+EOF
+
+# Зашифрувати паролем (AES-256-CBC + PBKDF2)
+openssl enc -aes-256-cbc -pbkdf2 \
+    -in  secret.txt \
+    -out secret.enc
+# Ввести пароль двічі
+```
+
+#### Переглянути зашифроване
+
+```bash
+# Бінарний вміст — нічого не розібрати
+xxd secret.enc | head -4
+
+# Розмір майже такий самий як оригінал
+ls -lh secret.txt secret.enc
+```
+
+#### Розшифрувати файл
+
+```bash
+openssl enc -d -aes-256-cbc -pbkdf2 \
+    -in  secret.enc \
+    -out secret_dec.txt
+# Ввести пароль
+
+cat secret_dec.txt
+```
+
+```bash
+# Перевірити що вміст збігається
+diff secret.txt secret_dec.txt && echo "Файли ідентичні ✓"
+```
+
+---
+
+### 3.3 Гібридне шифрування файлу (AES + RSA)
+
+У реальній практиці для шифрування файлів будь-якого розміру використовують **гібридний підхід**: файл шифрується AES, а сам AES-ключ шифрується RSA. Саме так працює HTTPS, PGP, S/MIME.
+
+```
+Файл ──► AES-256 (випадковий ключ) ──► зашифрований файл
+              │
+              ▼
+         RSA-encrypt(AES-ключ, публічний ключ) ──► зашифрований ключ
+```
+
+```bash
+cd ~/encrypt-lab
+
+# Великий файл для демонстрації
+dd if=/dev/urandom bs=1K count=100 2>/dev/null | base64 > bigfile.txt
+echo "Розмір: $(wc -c < bigfile.txt) байт"
+
+# 1. Генерація випадкового AES-ключа (32 байти = 256 біт)
+openssl rand -hex 32 > aes.key
+cat aes.key
+
+# 2. Зашифрувати файл AES-ключем
+openssl enc -aes-256-cbc -pbkdf2 \
+    -in bigfile.txt \
+    -out bigfile.enc \
+    -pass file:aes.key
+
+# 3. Зашифрувати AES-ключ публічним ключем RSA
+openssl pkeyutl -encrypt \
+    -inkey public.pem -pubin \
+    -in  aes.key \
+    -out aes.key.enc
+
+# Передаємо: bigfile.enc + aes.key.enc (aes.key можна видалити)
+rm aes.key
+ls -lh bigfile.txt bigfile.enc aes.key.enc
+```
+
+```bash
+# === Розшифрування ===
+
+# 1. Відновити AES-ключ приватним ключем RSA
+openssl pkeyutl -decrypt \
+    -inkey private.pem \
+    -in  aes.key.enc \
+    -out aes.key
+
+# 2. Розшифрувати файл відновленим ключем
+openssl enc -d -aes-256-cbc -pbkdf2 \
+    -in bigfile.enc \
+    -out bigfile_dec.txt \
+    -pass file:aes.key
+
+# Перевірити
+diff bigfile.txt bigfile_dec.txt && echo "Файли ідентичні ✓"
 ```
 
 ---
