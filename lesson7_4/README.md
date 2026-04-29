@@ -255,16 +255,32 @@ sudo tail -f /var/log/apache2/surname-access.log
 
 ## 4. Налаштування субдомену
 
-Субдомен — це `dev.surname.tsa233.lab`. З точки зору Apache він є **окремим віртуальним хостом**
-з власним `DocumentRoot` та конфігом. З точки зору DNS — новий A-запис у вже існуючій зоні.
+### Концепція: зона vs субдомен
+
+У вас є файл зони `tsa233.lab`. **Створювати окремий файл зони для `surname.tsa233.lab` не потрібно.**
+
+`surname.tsa233.lab` — це просто **A-запис усередині вже існуючої зони** `tsa233.lab`.
+Так само `dev.surname.tsa233.lab` — ще один A-запис у тій самій зоні.
 
 ```
-surname.tsa233.lab          → 192.168.100.20  (основний сайт)
+Зона: tsa233.lab  (/etc/bind/db.tsa233.lab)
+│
+├── @                   IN A  192.168.100.10   ← сам DNS-сервер
+├── surname             IN A  192.168.100.20   ← surname.tsa233.lab
+└── dev.surname         IN A  192.168.100.20   ← dev.surname.tsa233.lab
+```
+
+> Новий файл зони потрібен лише якщо ви **делегуєте** `surname.tsa233.lab`
+> на інший DNS-сервер (NS-делегування). У цьому занятті цього не робимо.
+
+З точки зору Apache кожен домен — **окремий віртуальний хост** з власним
+`DocumentRoot`. Сервер розрізняє їх за заголовком `Host:` у HTTP-запиті,
+тому обидва можуть слухати на одній IP та порту 80.
+
+```
+surname.tsa233.lab          → 192.168.100.20  (основний vhost)
 dev.surname.tsa233.lab      → 192.168.100.20  (той самий сервер, інший vhost)
 ```
-
-> Apache розрізняє їх за заголовком `Host:` HTTP-запиту, тому обидва можуть
-> слухати на одній IP та порту 80.
 
 ---
 
@@ -347,51 +363,68 @@ VirtualHost configuration:
 
 ---
 
-### Крок 8 — DNS-запис для субдомену
+### Крок 8 — Додати DNS-записи у зону `tsa233.lab`
 
-Субдомен повинен резолвитись DNS-сервером курсанта. Підключитись до `192.168.100.10` та
-відредагувати файл зони `surname.tsa233.lab`.
+Підключитись до DNS-сервера (`192.168.100.10`) та відкрити **існуючий** файл зони:
 
 ```bash
-# На DNS-сервері (192.168.100.10)
-sudo nano /etc/bind/db.surname.tsa233.lab
+sudo nano /etc/bind/db.tsa233.lab
 ```
 
-Знайти блок A-записів і додати новий рядок для `dev`:
+Файл зони виглядає приблизно так (скорочено):
 
 ```bind
-; Існуючі записи
-@       IN  A  192.168.100.20
-www     IN  A  192.168.100.1    ; через proxy викладача
+$ORIGIN tsa233.lab.
+$TTL 300
 
-; Новий запис субдомену
-dev     IN  A  192.168.100.20
+@   IN  SOA ns1.tsa233.lab. admin.tsa233.lab. (
+        2024042901  ; Serial
+        3600        ; Refresh
+        900         ; Retry
+        604800      ; Expire
+        300 )       ; Negative TTL
+
+    IN  NS  ns1.tsa233.lab.
+
+ns1 IN  A   192.168.100.10
 ```
 
-> `dev` без крапки в кінці — це відносне ім'я. BIND автоматично додає до нього
-> суфікс зони, тому `dev` → `dev.surname.tsa233.lab.`
-
-Збільшити серійний номер (Serial) у блоці SOA — інакше slave-сервери не підхоплять зміни:
+Необхідно **збільшити Serial на 1** і додати два нові рядки — один для основного домену курсанта,
+другий для субдомену:
 
 ```bind
-; Приклад SOA — змінити значення Serial
-$ORIGIN surname.tsa233.lab.
+$ORIGIN tsa233.lab.
+$TTL 300
+
 @   IN  SOA ns1.tsa233.lab. admin.tsa233.lab. (
         2024042902  ; Serial ← збільшити на 1
         3600        ; Refresh
         900         ; Retry
         604800      ; Expire
         300 )       ; Negative TTL
+
+    IN  NS  ns1.tsa233.lab.
+
+ns1         IN  A   192.168.100.10
+
+; Домен курсанта — замінити surname на своє прізвище
+surname     IN  A   192.168.100.20
+dev.surname IN  A   192.168.100.20
 ```
+
+> Імена `surname` та `dev.surname` — відносні (без крапки в кінці).
+> BIND автоматично додає суфікс `tsa233.lab.`, тому:
+> - `surname` → `surname.tsa233.lab.`
+> - `dev.surname` → `dev.surname.tsa233.lab.`
 
 Перевірити синтаксис та перезавантажити зону:
 
 ```bash
-# Перевірка файлу зони
-sudo named-checkzone surname.tsa233.lab /etc/bind/db.surname.tsa233.lab
+# Перевірка файлу зони (зона — tsa233.lab, не surname.tsa233.lab!)
+sudo named-checkzone tsa233.lab /etc/bind/db.tsa233.lab
 
 # Перезавантажити тільки цю зону (без зупинки BIND)
-sudo rndc reload surname.tsa233.lab
+sudo rndc reload tsa233.lab
 
 # Або перезавантажити весь BIND
 sudo systemctl reload bind9
@@ -399,20 +432,27 @@ sudo systemctl reload bind9
 
 ---
 
-### Крок 9 — Перевірка резолвінгу субдомену
+### Крок 9 — Перевірка резолвінгу
 
 ```bash
-# На workstation (192.168.100.20) — DNS-запит напряму до сервера курсанта
+# Перевірити обидва записи напряму (DNS-запит до 192.168.100.10)
+dig surname.tsa233.lab @192.168.100.10
 dig dev.surname.tsa233.lab @192.168.100.10
 
-# Має повернути:
+# Очікуваний вивід для кожного:
 # ;; ANSWER SECTION:
+# surname.tsa233.lab.      300  IN  A  192.168.100.20
 # dev.surname.tsa233.lab.  300  IN  A  192.168.100.20
 
-# Короткий варіант
+# Переконатись що зона правильно завантажена (перевірити SOA)
+dig SOA tsa233.lab @192.168.100.10
+
+# Короткий варіант через host
+host surname.tsa233.lab 192.168.100.10
 host dev.surname.tsa233.lab 192.168.100.10
 
-# Перевірка через системний DNS (якщо /etc/resolv.conf вказує на 192.168.100.10)
+# Якщо /etc/resolv.conf на workstation вказує на 192.168.100.10 — без @
+nslookup surname.tsa233.lab
 nslookup dev.surname.tsa233.lab
 ```
 
@@ -500,5 +540,5 @@ journalctl -u apache2 -f
 curl -I http://surname.tsa233.lab       # заголовки відповіді
 curl -v http://surname.tsa233.lab       # детальний вивід
 ss -tlnp | grep apache2                 # який порт слухає
-dig dev.surname.tsa233.lab @192.168.100.10   # DNS-запит до конкретного сервера
+dig surname.tsa233.lab @192.168.100.10       # DNS-запит до конкретного сервера
 ```
