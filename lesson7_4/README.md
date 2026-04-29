@@ -284,7 +284,85 @@ dev.surname.tsa233.lab      → 192.168.100.20  (той самий сервер,
 
 ---
 
-### Крок 5 — Директорія та сторінка субдомену
+### Крок 5 — DNS-запис та директорія субдомену
+
+#### 5.1 Додати A-записи у зону `tsa233.lab`
+
+Підключитись до DNS-сервера (`192.168.100.10`) та відкрити **існуючий** файл зони:
+
+```bash
+sudo nano /etc/bind/db.tsa233.lab
+```
+
+Файл зони (`db.tsa233.lab`) після заняття 6_2 виглядає так:
+
+```bind
+;
+; Файл прямої зони для tsa233.lab
+;
+$TTL    604800
+@   IN  SOA ns1.tsa233.lab. admin.tsa233.lab. (
+                  2024010101  ; Serial (формат: YYYYMMDDNN)
+                  3600        ; Refresh (1 год)
+                  1800        ; Retry (30 хв)
+                  604800      ; Expire (1 тиждень)
+                  86400 )     ; Negative Cache TTL (1 день)
+
+; Записи Name Server
+@       IN  NS      ns1.tsa233.lab.
+
+; A-записи (ім'я → IP)
+ns1     IN  A       192.168.100.10   ; DNS-сервер
+@       IN  A       192.168.100.1    ; Основний сайт викладача
+www     IN  A       192.168.100.1    ; www псевдонім
+
+; CNAME (псевдонім)
+web     IN  CNAME   tsa233.lab.
+```
+
+Необхідно **збільшити Serial на 1** і додати два нові A-записи для домену та субдомену курсанта:
+
+```bind
+;
+; Файл прямої зони для tsa233.lab
+;
+$TTL    604800
+@   IN  SOA ns1.tsa233.lab. admin.tsa233.lab. (
+                  2024010102  ; Serial ← збільшити на 1
+                  3600        ; Refresh (1 год)
+                  1800        ; Retry (30 хв)
+                  604800      ; Expire (1 тиждень)
+                  86400 )     ; Negative Cache TTL (1 день)
+
+; Записи Name Server
+@       IN  NS      ns1.tsa233.lab.
+
+; A-записи (ім'я → IP)
+ns1     IN  A       192.168.100.10   ; DNS-сервер
+@       IN  A       192.168.100.1    ; Основний сайт викладача
+www     IN  A       192.168.100.1    ; www псевдонім
+
+; CNAME (псевдонім)
+web     IN  CNAME   tsa233.lab.
+
+; Домен і субдомен курсанта — замінити surname на своє прізвище
+surname     IN  A   192.168.100.20   ; surname.tsa233.lab
+dev.surname IN  A   192.168.100.20   ; dev.surname.tsa233.lab
+```
+
+> Імена `surname` та `dev.surname` — відносні (без крапки в кінці).
+> BIND автоматично додає суфікс `tsa233.lab.`, тому:
+> - `surname` → `surname.tsa233.lab.`
+> - `dev.surname` → `dev.surname.tsa233.lab.`
+
+Перевірити синтаксис та перезавантажити зону:
+
+```bash
+sudo named-checkzone tsa233.lab /etc/bind/db.tsa233.lab
+sudo rndc reload tsa233.lab
+```
+
+#### 5.2 Створити директорію та тестову сторінку
 
 ```bash
 sudo mkdir -p /var/www/dev
@@ -363,76 +441,7 @@ VirtualHost configuration:
 
 ---
 
-### Крок 8 — Додати DNS-записи у зону `tsa233.lab`
-
-Підключитись до DNS-сервера (`192.168.100.10`) та відкрити **існуючий** файл зони:
-
-```bash
-sudo nano /etc/bind/db.tsa233.lab
-```
-
-Файл зони виглядає приблизно так (скорочено):
-
-```bind
-$ORIGIN tsa233.lab.
-$TTL 300
-
-@   IN  SOA ns1.tsa233.lab. admin.tsa233.lab. (
-        2024042901  ; Serial
-        3600        ; Refresh
-        900         ; Retry
-        604800      ; Expire
-        300 )       ; Negative TTL
-
-    IN  NS  ns1.tsa233.lab.
-
-ns1 IN  A   192.168.100.10
-```
-
-Необхідно **збільшити Serial на 1** і додати два нові рядки — один для основного домену курсанта,
-другий для субдомену:
-
-```bind
-$ORIGIN tsa233.lab.
-$TTL 300
-
-@   IN  SOA ns1.tsa233.lab. admin.tsa233.lab. (
-        2024042902  ; Serial ← збільшити на 1
-        3600        ; Refresh
-        900         ; Retry
-        604800      ; Expire
-        300 )       ; Negative TTL
-
-    IN  NS  ns1.tsa233.lab.
-
-ns1         IN  A   192.168.100.10
-
-; Домен курсанта — замінити surname на своє прізвище
-surname     IN  A   192.168.100.20
-dev.surname IN  A   192.168.100.20
-```
-
-> Імена `surname` та `dev.surname` — відносні (без крапки в кінці).
-> BIND автоматично додає суфікс `tsa233.lab.`, тому:
-> - `surname` → `surname.tsa233.lab.`
-> - `dev.surname` → `dev.surname.tsa233.lab.`
-
-Перевірити синтаксис та перезавантажити зону:
-
-```bash
-# Перевірка файлу зони (зона — tsa233.lab, не surname.tsa233.lab!)
-sudo named-checkzone tsa233.lab /etc/bind/db.tsa233.lab
-
-# Перезавантажити тільки цю зону (без зупинки BIND)
-sudo rndc reload tsa233.lab
-
-# Або перезавантажити весь BIND
-sudo systemctl reload bind9
-```
-
----
-
-### Крок 9 — Перевірка резолвінгу
+### Крок 8 — Перевірка резолвінгу
 
 ```bash
 # Перевірити обидва записи напряму (DNS-запит до 192.168.100.10)
@@ -458,7 +467,7 @@ nslookup dev.surname.tsa233.lab
 
 ---
 
-### Крок 10 — Перевірка HTTP-відповіді субдомену
+### Крок 9 — Перевірка HTTP-відповіді субдомену
 
 ```bash
 # Без DNS — через заголовок Host (для швидкої перевірки Apache)
